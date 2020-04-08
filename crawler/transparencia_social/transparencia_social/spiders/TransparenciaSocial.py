@@ -14,34 +14,27 @@ class TransparenciasocialSpider(scrapy.Spider):
             if len(links_from_ong) > 1:
                 for link in links_from_ong:
                     if "/mapa?" not in link:
-                        print(link)
-                        # yield response.follow(link, self.parse_ong_link)
+                        yield response.follow(link, self.parse_ong_link)
         
     def parse_ong_link(self, response):
+        possible_ong_nome = response.css('.name_ong_profile::text').get()       
+        ong_nome = possible_ong_nome if possible_ong_nome is not None else response.css('h5::text').get() 
+        
         ong_profile_list = response.css('.list_profile li')
+        
+        possible_ong_site = ong_profile_list.css('a::attr(href)').get()
+        ong_site = possible_ong_site if possible_ong_site is not None else "Sem site"
 
-        # vc esta com problema nesse for aqui cara, cê só ta iterando de forma errada! bom dia <3
-        for ong_profile in ong_profile_list: 
-            ong_nome = response.css('.name_ong_profile::text').get()
-            ong_link = ong_profile.css('a::attr(href)').get()
-            ong_email = ong_profile.css('li::text').get()
+        ong_email = "Sem email"
+        for ong_profile in ong_profile_list:
+            if '@' in ong_profile.css('::text').get():
+                ong_email = ong_profile.css('::text').get()
 
-            print("a.link", ong_link, "a.email", ong_email)
-
-            if ong_link is None:
-                ong_link = "ONG sem site cadastrado"
-
-            if '@' not in ong_email:
-                ong_email = "ONG sem email cadastrado"
-                
-            print("b.link", ong_link, "b.email", ong_email, "b.nome", ong_nome)
-
-            # sending a list to self.json_to_csv is better for csv format, trust me!
-            self.json_to_csv([{
-                'nome': ong_nome,
-                'link': ong_link,
-                'email': ong_email
-            }], response.css('title::text').get())
+        self.json_to_csv([{
+            'nome': ong_nome ,
+            'site': ong_site ,
+            'email': ong_email 
+        }], ong_nome)
 
     def json_to_csv(self, data, file_name):
         pandas.read_json(json.dumps(data)).to_csv(f'{file_name}.csv')
