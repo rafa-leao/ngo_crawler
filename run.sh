@@ -1,0 +1,2 @@
+scrapy runspider crawler/transparencia_social/transparencia_social/spiders/TransparenciaSocial.py
+python helper/join_csv_files.py
