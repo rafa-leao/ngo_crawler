@@ -26,14 +26,10 @@ class TransparenciasocialSpider(scrapy.Spider):
         possible_ong_site = ong_profile_list.css('a::attr(href)').get()
         ong_site = possible_ong_site if possible_ong_site is not None else "Sem site"
 
-        # ong_email = "Sem email"
-        # for ong_profile in ong_profile_list:
-        #     if '@' in ong_profile.css('::text').get():
-        #         ong_email = ong_profile.css('::text').get()
-        
         self.json_to_csv([{
             'nome': ong_nome ,
-            'site': ong_site 
+            'site': ong_site ,
+            'link da ONG': response.url
         }], ong_nome)
 
     def json_to_csv(self, data, file_name):
